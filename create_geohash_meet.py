@@ -4,8 +4,8 @@ from tqdm import tqdm
 import numpy as np
 import pandas as pd
 
-def createGeohashMeetJsons():
-    geohash_data = pd.read_csv('data/geolife_geohash_size_8_no_duplicates.csv')
+def createGeohashMeetJsons(in_file, out_dir):
+    geohash_data = pd.read_csv(in_file)
 
     # create pairs of meetings for two persons
     locations_meets = []
@@ -20,6 +20,9 @@ def createGeohashMeetJsons():
     k = 0
     tx = 0
     for code, group in codes:
+        if t % 1000 == 0:
+            print(str(t / float(geohash_count)), t, '/', geohash_count)
+
         t += 1
         lat = group['Latitude'].mean()
         lon = group['Longitude'].mean()
@@ -48,10 +51,10 @@ def createGeohashMeetJsons():
 
 
         if tx >= 10000:
-            if not (os.path.isdir('data/geolife_geohash_meet/')):
-                os.makedirs('data/geolife_geohash_meet/')
+            if not (os.path.isdir(out_dir)):
+                os.makedirs(out_dir)
 
-            with open('data/geolife_geohash_meet/geolife_geohash_meet_' + str(k) + '.json', 'w') as json_file:
+            with open(out_dir + 'geolife_geohash_meet_' + str(k) + '.json', 'w') as json_file:
                 json.dump(locations_meets, json_file, indent=4)
 
             k += 1
@@ -60,21 +63,21 @@ def createGeohashMeetJsons():
     print(str(t / float(geohash_count)), t, '/', geohash_count)
 
     if len(locations_meets) > 0:
-        if not (os.path.isdir('data/geolife_geohash_meet/')):
-            os.makedirs('data/geolife_geohash_meet/')
+        if not (os.path.isdir(out_dir)):
+            os.makedirs(out_dir)
 
-        with open('data/geolife_geohash_meet/geolife_geohash_meet_' + str(k) + '.json', 'w') as json_file:
+        with open(out_dir + 'geolife_geohash_meet_' + str(k) + '.json', 'w') as json_file:
             json.dump(locations_meets, json_file, indent=4)
 
         k += 1
     return k
 
-def createGeohashMeetCSV(count_files):
+def createGeohashMeetCSV(count_files, in_dir, out_file):
     meets = []
     for i in tqdm(range(count_files)):  # update number based on count of json files
-        d = pd.read_json('data/geolife_geohash_meet/geolife_geohash_meet_' + str(i) + '.json')
+        d = pd.read_json(in_dir + 'geolife_geohash_meet_' + str(i) + '.json')
         d['meets'] = d['meets'].apply(json.dumps)
         d['meets_keys'] = d['meets_keys'].apply(json.dumps)
         meets.append(d.copy(deep=True))
     meets = pd.concat(meets)
-    meets.to_csv('data/geolife_geohash_meet_size_8.csv', index=False)
+    meets.to_csv(out_file, index=False)

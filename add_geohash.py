@@ -9,8 +9,8 @@ def create_geohash(lat, lon):
     return gh.encode(lat, lon, precision=8)
 
 
-def add_geohash():
-    gps_data = pd.read_csv('data/geolife_gps_data.csv')
+def add_geohash(in_file, out_file):
+    gps_data = pd.read_csv(in_file)
     codes = []
     columns = gps_data.columns.to_list()
     lat = columns.index('Latitude')
@@ -21,4 +21,4 @@ def add_geohash():
     geohash_data = gps_data.copy(deep=True)
     geohash_data['Geohash'] = codes
 
-    geohash_data.to_csv('data/geolife_geohash_size_8.csv', index=False)
+    geohash_data.to_csv(out_file, index=False)
